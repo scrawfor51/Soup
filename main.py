@@ -7,7 +7,7 @@ def main():
     recipes = []
 
     # read the text recipes into a list of Recipe objects
-    for filename in glob.glob("input/*.txt"):
+    for filename in glob.glob("resources/input/*.txt"):
         recipes.append(Recipe(filename))
 
     # for each generation
