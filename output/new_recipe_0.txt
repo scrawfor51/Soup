@@ -1,8 +1,6 @@
-16.0 oz chicken breast
-10.0 oz carrot
-7.681 oz celery
-0.111 oz thyme
-48.0 oz chicken broth
-0.166 oz Italian seasoning
-0.042 oz red pepper flake
-18.0 oz cheese tortellini
+16.0 oz ground beef
+6.0 oz onion
+7.5 oz water
+40.0 oz tomato
+0.5 oz chili powder
+30.0 oz red kidney bean

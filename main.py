@@ -3,6 +3,7 @@ import os
 from recipe import Recipe, ingredients_from_file
 import random
 
+master_ingredients = []  # global variable accessible for mutation methods
 
 # Gen new recipe name based off ingredients
 def newName(new_recipe):
@@ -110,12 +111,50 @@ def genSoup(recipe_1, recipe_2):
     soup_2_part_1 = recipe_2.ingredients[0 : soup_2_pivot]
     soup_2_part_2 = recipe_2.ingredients[soup_2_pivot : ]
 
-    print(soup_2_part_1)
+    new_recipe_1 = mutate(soup_1_part_1 + soup_2_part_1)
+    new_recipe_2 = mutate(soup_1_part_2 + soup_2_part_2)
+
     newSoups.append(Recipe(soup_1_part_1 + soup_2_part_1))
     newSoups.append(Recipe(soup_1_part_2 + soup_2_part_2))
 
     return newSoups
 
+
+def change_amt(string_arr):
+    """Helper function for the mutate function, changes the amount of an ingredient uniformly selected at random."""
+
+    index_to_change = random.choice(range(len(string_arr)))
+    change_holder = string_arr[index_to_change].ounces  # holds original value
+
+    addition = round(random.uniform(0, change_holder), 2)  # the value we will add to our our current ingredient amount
+    # chosen randomly from 0 to the original ingredient value
+
+    string_arr[index_to_change].set_amount(change_holder + addition)
+
+
+def change_ingredient(string_arr):
+    """Helper function for the mutate function, changes an ingredient uniformly selected at random."""
+
+    index_to_change = random.choice(range(len(string_arr)))
+    new_ingredient = random.choice(range(len(master_ingredients)))
+
+    # print(string_arr[index_to_change])
+    # print(master_ingredients[new_ingredient])
+
+    string_arr[index_to_change].name = master_ingredients[new_ingredient]
+
+
+def mutate(string_arr):
+    """Takes a recipe in list form and mutates it in some way."""
+
+    mutate_op = 2#random.randrange(0, 4) #used to determine which mutation will occur
+    # print(string_arr)
+    if mutate_op == 0:
+        change_amt(string_arr)
+    elif mutate_op == 1:
+        change_ingredient(string_arr)
+    # print(string_arr)
+    return
 
 def main():
     recipes = []
@@ -123,6 +162,13 @@ def main():
     # read the text recipes into a list of Recipe objects
     for filename in glob.glob("resources/input/*.txt"):
         recipes.append(Recipe(ingredients_from_file(filename)))
+
+    for recipe in recipes:  # allowing us to make a master list of ingredients to mutate from
+        for ingredient in recipe.ingredients:
+
+            if not ingredient.name[:-1] in master_ingredients:
+                master_ingredients.append(ingredient.name[:-1])
+
 
     fillGeneration(recipes)
 
