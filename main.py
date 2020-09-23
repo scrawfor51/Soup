@@ -1,6 +1,6 @@
 import glob
 import os
-from recipe import Recipe
+from recipe import Recipe, ingredients_from_file
 import random
 
 
@@ -110,9 +110,9 @@ def genSoup(recipe_1, recipe_2):
     soup_2_part_1 = recipe_2.ingredients[0 : soup_2_pivot]
     soup_2_part_2 = recipe_2.ingredients[soup_2_pivot : ]
 
-    print (soup_2_part_1)
-    newSoups += Recipe(soup_1_part_1 + soup_2_part_1)
-    newSoups += Recipe(soup_1_part_2 + soup_2_part_2)
+    print(soup_2_part_1)
+    newSoups.append(Recipe(soup_1_part_1 + soup_2_part_1))
+    newSoups.append(Recipe(soup_1_part_2 + soup_2_part_2))
 
     return newSoups
 
@@ -122,7 +122,7 @@ def main():
 
     # read the text recipes into a list of Recipe objects
     for filename in glob.glob("resources/input/*.txt"):
-        recipes.append(Recipe(filename))
+        recipes.append(Recipe(ingredients_from_file(filename)))
 
     fillGeneration(recipes)
 
