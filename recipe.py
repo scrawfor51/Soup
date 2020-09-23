@@ -1,6 +1,18 @@
 from ingredient import Ingredient
 
 
+def ingredients_from_file(filename):
+    ingredients = []
+    with open(filename) as file:
+        for line in file:
+            divided_line = line.split(" ", 2)
+            ounces = float(divided_line[0])
+            name = divided_line[2]
+            ingredients.append(Ingredient(ounces, name))
+
+    return ingredients
+
+
 class Recipe:
     """
     A class representing a recipe.
@@ -19,16 +31,9 @@ class Recipe:
         Returns the fitness of the recipe.
     """
 
-    def __init__(self, filename):
+    def __init__(self, ingredients):
         """Construct a recipe from a given filename"""
-        self.ingredients = []
-
-        with open(filename) as file:
-            for line in file:
-                divided_line = line.split(" ", 2)
-                ounces = float(divided_line[0])
-                name = divided_line[2]
-                self.add_ingredient(Ingredient(ounces, name))
+        self.ingredients = ingredients
 
     def __repr__(self):
         """Return a string representation of the recipe; inverse of __init__"""
