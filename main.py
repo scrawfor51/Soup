@@ -7,7 +7,7 @@ import random
 master_ingredients = []  # global variable accessible for mutation methods
 
 # Gen new recipe name based off ingredients
-def newName(new_recipe):
+def new_name(new_recipe):
     name = ""
     soup_type = ""
     for ingredient in new_recipe:
@@ -28,10 +28,12 @@ def newName(new_recipe):
 # original author Mohit Kumra. The code was adapted to fit our purposes but still originated from the original author.
 
 
-# sort recipes by fitness
-# @param recipes -- the list of recipes in our population
-# @ param lowRecipeIndex -- the low index
-# @param highRecipeIndex -- the high index
+""" sort recipes by fitness
+@param recipes -- the list of recipes in our population
+@ param lowRecipeIndex -- the low index
+@param highRecipeIndex -- the high index
+"""
+
 def quicksortPartition(recipes, lowRecipeIndex, highRecipeIndex):
     lesserIndex = lowRecipeIndex - 1
     pivot = recipes[highRecipeIndex].fitness()
@@ -51,7 +53,7 @@ def quicksortPartition(recipes, lowRecipeIndex, highRecipeIndex):
     return lesserIndex + 1
 
 
-def quicksortForSoup(recipes, lowRecipeIndex, highRecipeIndex):
+def sort_soup(recipes, lowRecipeIndex, highRecipeIndex):
     if len(recipes) <= 1:
         return recipes
 
@@ -63,12 +65,30 @@ def quicksortForSoup(recipes, lowRecipeIndex, highRecipeIndex):
         quicksortForSoup(recipes, partitionIndex + 1, highRecipeIndex)
 
 
-def pivotIndex(recipe):
+"""
+This method takes in a recipe and then randomly selects a point within that recipe which will act as its internal pivot.
+The pivot is later used when partitioning the soup into seperate halves which are recombined with another soups' halves
+to create a pair of entirely new soup recipes. 
+
+@param recipe -- The soup recipe we want to randomly partition. 
+@return a random pivot index within the soup recipe.
+"""
+def pivot_index(recipe):
     recipeLen = recipe.fitness()
     randPiv = random.randint(0, recipeLen - 1)
-    return randPiv
+    return rand_pivot
 
-def recipeSelect(recipes):
+
+"""
+This method takes in an array of recipes and then pseudo-randomly, selects one of them. The process of selecting them
+is based off of their relative fitness' where the most fit recipe is given the highest odds of being selected. 
+
+It is important that the passed list is already sorted by fitness. 
+
+@param recipes -- A sorted array of soup recipes where the recipes are ordered based on their relative fitness.
+return a pseudo-randomly selected soup from the provided list. 
+"""
+def recipe_select(recipes):
     selectorNumber = random.randint(0, 20)
     if selectorNumber < 5:
         return recipes[5]
@@ -84,27 +104,45 @@ def recipeSelect(recipes):
         return recipes[0]
 
 
+"""
+This is a helper function which takes in the total list of recipes and calls for new recipes to be made so long as the new
+population is less then the starting population. 
 
-def fillGeneration(recipes):
+It uses the sort_soup, recipe_select, and gen_soup methods to facillitate the generation creation. 
+
+@param recipes -- A list of the different soup recipes in the population.
+@return A new generation of the soup population which is equal in size to the starting population but consists of new 
+soup recipes. 
+"""
+def fill_generation(recipes):
     newGen = []
 
     recipes = recipes
-    quicksortForSoup(recipes, 0, len(recipes) - 1)
+    sort_soup(recipes, 0, len(recipes) - 1)
 
     while len(newGen) < (len(recipes)/2):
-        s1 = recipeSelect(recipes)
-        s2 = recipeSelect(recipes)
-        newGen += genSoup(s1, s2)
+        s1 = recipe_select(recipes)
+        s2 = recipe_select(recipes)
+        newGen += gen_soup(s1, s2)
 
-    return newGen
+    return new_gen
 
 
-def genSoup(recipe_1, recipe_2):
+"""
+This function takes in two existing soup recipes and uses the helper method pivot_index to randomly split the 
+soups at an inex. It then combines the halves of the two different soups (i.e. half 1 and half 2) so that two new soups 
+are created. 
 
-    newSoups = []
+@param recipe_1 the first soup we are using as a base for the new recipes.
+@param recipe_2 the second soup we are using as a base for the new recipes.
+@return An array consiting of two soup recipes. 
+"""
+def gen_soup(recipe_1, recipe_2):
 
-    soup_1_pivot = pivotIndex(recipe_1)
-    soup_2_pivot = pivotIndex(recipe_2)
+    new_soups = []
+
+    soup_1_pivot = pivot_index(recipe_1)
+    soup_2_pivot = pivot_index(recipe_2)
 
     soup_1_part_1 = recipe_1.ingredients[0 : soup_1_pivot]
     soup_1_part_2 = recipe_1.ingredients[soup_1_pivot: ]
@@ -115,10 +153,11 @@ def genSoup(recipe_1, recipe_2):
     new_recipe_1 = mutate(soup_1_part_1 + soup_2_part_1)
     new_recipe_2 = mutate(soup_1_part_2 + soup_2_part_2)
 
-    newSoups.append(Recipe(new_recipe_1))#soup_1_part_1 + soup_2_part_1))
-    newSoups.append(Recipe(new_recipe_2))#soup_1_part_2 + soup_2_part_2))
+    new_soups.append(Recipe(new_recipe_1))#soup_1_part_1 + soup_2_part_1))
+    new_soups.append(Recipe(new_recipe_2))#soup_1_part_2 + soup_2_part_2))
 
-    return newSoups
+    return new_soups
+
 
 
 def change_amt(string_arr):
