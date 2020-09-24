@@ -22,12 +22,13 @@ def new_name(new_recipe):
         soup_type = "thick"
     if "mush" in new_recipe:
         soup_type = "pottage"
+    else:
+        soup_type = "mystery stew"
     return name + soup_type
+
 
 # Code credit of geeksforgeeks.com all intellectual property and credit belongs to the authors of the website and the code's
 # original author Mohit Kumra. The code was adapted to fit our purposes but still originated from the original author.
-
-
 """ sort recipes by fitness
 @param recipes -- the list of recipes in our population
 @ param lowRecipeIndex -- the low index
@@ -159,6 +160,30 @@ def gen_soup(recipe_1, recipe_2):
     return new_soups
 
 
+"""
+Takes in the last population and the new population as already sorted arrays, and then uses the ordering to select 
+the three fittest recipes from each population and combine them into a new generation. At this point, the three least 
+fit soups from each generation can be discarded, and the new generation sent forth as the new starting population for 
+the next generation of soup recipes.
+
+@param population_1 -- The oldest population of soup, already sorted by fitness
+@param population_2 -- The younger population of soup, sorted by fitness
+@return A new population of soup comprised of the three fittest recipes from each of the two populations
+"""
+def select_new_generation(population_1, population_2):
+    new_population = []
+
+    top_half_pop_1 = []
+    top_half_pop_2 = []
+
+    top_half_pop_1 += population_1[3:]
+    top_half_pop_2 += population_2[3:]
+
+    new_population += top_half_pop_1
+    new_population += top_half_pop_2
+
+    return new_population
+
 
 def change_amt(string_arr):
     """Helper function for the mutate function, changes the amount of an ingredient uniformly selected at random."""
@@ -264,9 +289,13 @@ def main():
             if not ingredient.name[:-1] in master_ingredients:
                 master_ingredients.append(ingredient.name[:-1])
 
-    fill_generation(recipes)
+    new_recipes = fill_generation(recipes)
+    new_population = select_new_generation(recipes, new_recipes)
+
+
 
         # create n new individuals, where n is the population size
+
 
             # select two individuals from the population (probability based on fitness)
 
@@ -280,7 +309,7 @@ def main():
     # output the generated recipes to text files
     for i in range(len(recipes)):
         with open("output/new_recipe_" + str(i) + ".txt", "w") as file:
-            file.write(str(recipes[i]))
+            file.write(str(new_population[i]))
 
 
 
