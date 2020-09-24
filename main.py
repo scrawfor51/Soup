@@ -115,8 +115,8 @@ def genSoup(recipe_1, recipe_2):
     new_recipe_1 = mutate(soup_1_part_1 + soup_2_part_1)
     new_recipe_2 = mutate(soup_1_part_2 + soup_2_part_2)
 
-    newSoups.append(Recipe(soup_1_part_1 + soup_2_part_1))
-    newSoups.append(Recipe(soup_1_part_2 + soup_2_part_2))
+    newSoups.append(Recipe(new_recipe_1))#soup_1_part_1 + soup_2_part_1))
+    newSoups.append(Recipe(new_recipe_2))#soup_1_part_2 + soup_2_part_2))
 
     return newSoups
 
@@ -166,19 +166,26 @@ def add_ingredient(string_arr):
     string_arr.append(Ingredient(new_amt, master_ingredients[new_ingredient]))
 
 
+def delete_ingredient(string_arr):
+    """Helper function for the mutate function, deletes an ingredient uniformly selected at random."""
+
+    index_to_delete = random.choice(range(len(string_arr)))
+    string_arr.pop(index_to_delete)  # pop method discovered on w3schools.com
 
 def mutate(string_arr):
     """Takes a recipe in list form and mutates it in some way."""
 
-    mutate_op = 2#random.randrange(0, 4) #used to determine which mutation will occur
-    print(string_arr)
+    mutate_op = random.randrange(0, 4) #used to determine which mutation will occur
+
     if mutate_op == 0:
         change_amt(string_arr)
     elif mutate_op == 1:
         change_ingredient(string_arr)
     elif mutate_op == 2:
         add_ingredient(string_arr)
-    print(string_arr)
+    else:
+        delete_ingredient(string_arr)
+
     return
 
 def main():
