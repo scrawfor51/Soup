@@ -1,6 +1,7 @@
 import glob
 import os
 from recipe import Recipe, ingredients_from_file
+from ingredient import Ingredient
 import random
 
 master_ingredients = []  # global variable accessible for mutation methods
@@ -138,22 +139,46 @@ def change_ingredient(string_arr):
     index_to_change = random.choice(range(len(string_arr)))
     new_ingredient = random.choice(range(len(master_ingredients)))
 
-    # print(string_arr[index_to_change])
-    # print(master_ingredients[new_ingredient])
-
     string_arr[index_to_change].name = master_ingredients[new_ingredient]
+
+
+def add_ingredient(string_arr):
+    """Helper function for the mutate function, adds an ingredient uniformly selected at random."""
+
+    name_storage = []
+    for ingredient in string_arr:
+        name_storage.append(ingredient.name)
+
+    if len(name_storage) == len(master_ingredients):  # ensures that we don't break the program if all the ingredients
+        # are in a recipe
+        return
+
+    new_ingredient = random.choice(range(len(master_ingredients)))
+
+    while True:  # loop to ensure that we're not adding an ingredient we already have
+        if not master_ingredients[new_ingredient] in name_storage:
+            break
+        else:
+            new_ingredient = random.choice(range(len(master_ingredients)))
+
+    new_amt = round(random.uniform(0, 16), 2)
+
+    string_arr.append(Ingredient(new_amt, master_ingredients[new_ingredient]))
+
 
 
 def mutate(string_arr):
     """Takes a recipe in list form and mutates it in some way."""
 
     mutate_op = 2#random.randrange(0, 4) #used to determine which mutation will occur
-    # print(string_arr)
+    print(string_arr)
     if mutate_op == 0:
         change_amt(string_arr)
     elif mutate_op == 1:
         change_ingredient(string_arr)
-    # print(string_arr)
+    elif mutate_op == 2:
+        add_ingredient(string_arr)
+    print(string_arr)
     return
 
 def main():
@@ -168,7 +193,6 @@ def main():
 
             if not ingredient.name[:-1] in master_ingredients:
                 master_ingredients.append(ingredient.name[:-1])
-
 
     fillGeneration(recipes)
 
