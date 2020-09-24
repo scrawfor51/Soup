@@ -153,8 +153,8 @@ def gen_soup(recipe_1, recipe_2):
     new_recipe_1 = mutate(soup_1_part_1 + soup_2_part_1)
     new_recipe_2 = mutate(soup_1_part_2 + soup_2_part_2)
 
-    new_soups.append(Recipe(new_recipe_1))#soup_1_part_1 + soup_2_part_1))
-    new_soups.append(Recipe(new_recipe_2))#soup_1_part_2 + soup_2_part_2))
+    new_soups.append(Recipe(new_recipe_1))
+    new_soups.append(Recipe(new_recipe_2))
 
     return new_soups
 
@@ -214,7 +214,7 @@ def delete_ingredient(string_arr):
 def mutate(string_arr):
     """Takes a recipe in list form and mutates it in some way."""
 
-    mutate_op = random.randrange(0, 4) #used to determine which mutation will occur
+    mutate_op = random.randrange(0, 4)  # used to determine which mutation will occur
 
     if mutate_op == 0:
         change_amt(string_arr)
@@ -225,7 +225,31 @@ def mutate(string_arr):
     else:
         delete_ingredient(string_arr)
 
-    return
+    final_arr = normalize(string_arr)  # ensures our ingredients add to 100oz
+
+    return final_arr
+
+
+def normalize(string_arr):
+    """Takes a list of ingredients and normalizes them to equal 100oz."""
+
+    original_vals = []  # stores the original values of the arrays
+
+    for ingredient in string_arr:
+        original_vals.append(round(ingredient.ounces, 2))  # simplifies values
+
+    original_sums = sum(original_vals)
+    to_mult = 100 / original_sums  # gives us the amount to multiply our entries by to scale to 100 oz
+
+    new_vals = []
+
+    for entry in original_vals:
+        new_vals.append(round(entry * to_mult, 2))
+
+    for i in range(len(string_arr)):
+        string_arr[i].set_amount(new_vals[i])
+
+    return string_arr
 
 def main():
     recipes = []
