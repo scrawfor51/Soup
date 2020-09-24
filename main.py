@@ -61,8 +61,8 @@ def sort_soup(recipes, lowRecipeIndex, highRecipeIndex):
 
         partitionIndex = quicksortPartition(recipes, lowRecipeIndex, highRecipeIndex)
 
-        quicksortForSoup(recipes, lowRecipeIndex, partitionIndex - 1)
-        quicksortForSoup(recipes, partitionIndex + 1, highRecipeIndex)
+        sort_soup(recipes, lowRecipeIndex, partitionIndex - 1)
+        sort_soup(recipes, partitionIndex + 1, highRecipeIndex)
 
 
 """
@@ -75,7 +75,7 @@ to create a pair of entirely new soup recipes.
 """
 def pivot_index(recipe):
     recipeLen = recipe.fitness()
-    randPiv = random.randint(0, recipeLen - 1)
+    rand_pivot = random.randint(0, recipeLen - 1)
     return rand_pivot
 
 
@@ -115,15 +115,15 @@ It uses the sort_soup, recipe_select, and gen_soup methods to facillitate the ge
 soup recipes. 
 """
 def fill_generation(recipes):
-    newGen = []
+    new_gen = []
 
     recipes = recipes
     sort_soup(recipes, 0, len(recipes) - 1)
 
-    while len(newGen) < (len(recipes)/2):
+    while len(new_gen) < (len(recipes)/2):
         s1 = recipe_select(recipes)
         s2 = recipe_select(recipes)
-        newGen += gen_soup(s1, s2)
+        new_gen += gen_soup(s1, s2)
 
     return new_gen
 
@@ -240,7 +240,7 @@ def main():
             if not ingredient.name[:-1] in master_ingredients:
                 master_ingredients.append(ingredient.name[:-1])
 
-    fillGeneration(recipes)
+    fill_generation(recipes)
 
         # create n new individuals, where n is the population size
 
