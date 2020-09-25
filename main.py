@@ -50,7 +50,9 @@ def gen_soup(recipe_one, recipe_two):
     pivot_two = random.randint(0, recipe_two.fitness() - 1)
 
     soup = Recipe(recipe_one.ingredients[0: pivot_one] + recipe_two.ingredients[pivot_two:])
-    soup.mutate()
+
+    if random.randint(0, 1) == 1:  # to determine if we're going to mutate the recipe
+        soup.mutate()  # 50% chance of mutation
     soup.deduplicate()
     soup.normalize()
 
