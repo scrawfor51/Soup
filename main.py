@@ -1,280 +1,78 @@
 import glob
+from operator import methodcaller
 import os
-from recipe import Recipe, ingredients_from_file
-from ingredient import Ingredient
 import random
-
-master_ingredients = []  # global variable accessible for mutation methods
-
-# Gen new recipe name based off ingredients
-def new_name(new_recipe):
-    name = ""
-    soup_type = ""
-    for ingredient in new_recipe:
-        name += ingredient + "-y "
-    if "seafood" & "milk" in new_recipe:
-        soup_type = "bisque"
-    if "cold" in new_recipe:
-        soup_type = "gazpacho"
-    if "ground" in new_recipe:
-        soup_type = "consomme"
-    if "flour" | "cornstarch" in new_recipe:
-        soup_type = "thick"
-    if "mush" in new_recipe:
-        soup_type = "pottage"
-    else:
-        soup_type = "mystery stew"
-    return name + soup_type
+from recipe import Recipe, ingredients_from_file
+import sys
 
 
-# Code credit of geeksforgeeks.com all intellectual property and credit belongs to the authors of the website and the code's
-# original author Mohit Kumra. The code was adapted to fit our purposes but still originated from the original author.
-""" sort recipes by fitness
-@param recipes -- the list of recipes in our population
-@ param lowRecipeIndex -- the low index
-@param highRecipeIndex -- the high index
-"""
-
-def quicksortPartition(recipes, lowRecipeIndex, highRecipeIndex):
-    lesserIndex = lowRecipeIndex - 1
-    pivot = recipes[highRecipeIndex].fitness()
-
-    for recipe in range (lowRecipeIndex, highRecipeIndex):
-
-        if recipes[recipe].fitness() <= pivot:
-
-            lesserIndex += 1
-            temp = recipes[lesserIndex]
-            recipes[lesserIndex] = recipes[recipe]
-            recipes[recipe] = temp
-
-    temp = recipes[lesserIndex + 1]
-    recipes[lesserIndex + 1] = recipes[highRecipeIndex]
-    recipes[highRecipeIndex] = temp
-    return lesserIndex + 1
-
-
-def sort_soup(recipes, lowRecipeIndex, highRecipeIndex):
-    if len(recipes) <= 1:
-        return recipes
-
-    if lowRecipeIndex < highRecipeIndex:
-
-        partitionIndex = quicksortPartition(recipes, lowRecipeIndex, highRecipeIndex)
-
-        sort_soup(recipes, lowRecipeIndex, partitionIndex - 1)
-        sort_soup(recipes, partitionIndex + 1, highRecipeIndex)
-
-
-"""
-This method takes in a recipe and then randomly selects a point within that recipe which will act as its internal pivot.
-The pivot is later used when partitioning the soup into seperate halves which are recombined with another soups' halves
-to create a pair of entirely new soup recipes. 
-
-@param recipe -- The soup recipe we want to randomly partition. 
-@return a random pivot index within the soup recipe.
-"""
-def pivot_index(recipe):
-    recipeLen = recipe.fitness()
-    rand_pivot = random.randint(0, recipeLen - 1)
-    return rand_pivot
-
-
-"""
-This method takes in an array of recipes and then pseudo-randomly, selects one of them. The process of selecting them
-is based off of their relative fitness' where the most fit recipe is given the highest odds of being selected. 
-
-It is important that the passed list is already sorted by fitness. 
-
-@param recipes -- A sorted array of soup recipes where the recipes are ordered based on their relative fitness.
-return a pseudo-randomly selected soup from the provided list. 
-"""
 def recipe_select(recipes):
-    selectorNumber = random.randint(0, 20)
-    if selectorNumber < 5:
-        return recipes[5]
-    if selectorNumber > 5 & selectorNumber < 10:
-        return recipes[4]
-    if selectorNumber > 10 & selectorNumber < 14:
-        return recipes[3]
-    if selectorNumber > 14 & selectorNumber < 17:
-        return recipes[2]
-    if selectorNumber > 17 & selectorNumber < 19:
-        return recipes[1]
-    else:
-        return recipes[0]
+    """
+    Selects a recipe, using the fitness as the weight in random.choices.
+
+    @param recipes -- A list of the different soup recipes in the population.
+    @return the selected recipe
+    """
+    fitness_list = [recipe.fitness() for recipe in recipes]
+    return random.choices(recipes, weights=fitness_list)[0]
 
 
-"""
-This is a helper function which takes in the total list of recipes and calls for new recipes to be made so long as the new
-population is less then the starting population. 
-
-It uses the sort_soup, recipe_select, and gen_soup methods to facillitate the generation creation. 
-
-@param recipes -- A list of the different soup recipes in the population.
-@return A new generation of the soup population which is equal in size to the starting population but consists of new 
-soup recipes. 
-"""
 def fill_generation(recipes):
-    new_gen = []
+    """
+    This is a helper function which takes in the total list of recipes and calls for new recipes to be made so long as
+    the new population is less then the starting population.
 
-    recipes = recipes
-    sort_soup(recipes, 0, len(recipes) - 1)
+    @param recipes -- A list of the different soup recipes in the population.
+    @return A new generation of the soup population which is equal in size to the starting population but consists of
+    new soup recipes.
+    """
+    generation = []
 
-    while len(new_gen) < (len(recipes)/2):
-        s1 = recipe_select(recipes)
-        s2 = recipe_select(recipes)
-        new_gen += gen_soup(s1, s2)
+    # generate n recipes, where n is our current population
+    for i in range(len(recipes)):
+        soup_one = recipe_select(recipes)
+        soup_two = recipe_select(recipes)
+        generation.append(gen_soup(soup_one, soup_two))
 
-    return new_gen
-
-
-"""
-This function takes in two existing soup recipes and uses the helper method pivot_index to randomly split the 
-soups at an inex. It then combines the halves of the two different soups (i.e. half 1 and half 2) so that two new soups 
-are created. 
-
-@param recipe_1 the first soup we are using as a base for the new recipes.
-@param recipe_2 the second soup we are using as a base for the new recipes.
-@return An array consiting of two soup recipes. 
-"""
-def gen_soup(recipe_1, recipe_2):
-
-    new_soups = []
-
-    soup_1_pivot = pivot_index(recipe_1)
-    soup_2_pivot = pivot_index(recipe_2)
-
-    soup_1_part_1 = recipe_1.ingredients[0 : soup_1_pivot]
-    soup_1_part_2 = recipe_1.ingredients[soup_1_pivot: ]
-
-    soup_2_part_1 = recipe_2.ingredients[0 : soup_2_pivot]
-    soup_2_part_2 = recipe_2.ingredients[soup_2_pivot : ]
-
-    new_recipe_1 = mutate(soup_1_part_1 + soup_2_part_1)
-    new_recipe_2 = mutate(soup_1_part_2 + soup_2_part_2)
-
-    new_soups.append(Recipe(new_recipe_1))
-    new_soups.append(Recipe(new_recipe_2))
-
-    return new_soups
+    return generation
 
 
-"""
-Takes in the last population and the new population as already sorted arrays, and then uses the ordering to select 
-the three fittest recipes from each population and combine them into a new generation. At this point, the three least 
-fit soups from each generation can be discarded, and the new generation sent forth as the new starting population for 
-the next generation of soup recipes.
+def gen_soup(recipe_one, recipe_two):
+    """
+    This function takes in two existing soup recipes and randomly splits the soups at an pivot index.
+    It then combines the halves of the two different soups so a new soup is created.
 
-@param population_1 -- The oldest population of soup, already sorted by fitness
-@param population_2 -- The younger population of soup, sorted by fitness
-@return A new population of soup comprised of the three fittest recipes from each of the two populations
-"""
-def select_new_generation(population_1, population_2):
-    new_population = []
+    @param recipe_one the first soup we are using as a base for the new recipes.
+    @param recipe_two the second soup we are using as a base for the new recipes.
+    @return the new soup
+    """
+    pivot_one = random.randint(0, recipe_one.fitness() - 1)
+    pivot_two = random.randint(0, recipe_two.fitness() - 1)
 
-    top_half_pop_1 = []
-    top_half_pop_2 = []
+    soup = Recipe(recipe_one.ingredients[0: pivot_one] + recipe_two.ingredients[pivot_two:])
+    soup.mutate()
+    soup.deduplicate()
+    soup.normalize()
 
-    top_half_pop_1 += population_1[3:]
-    top_half_pop_2 += population_2[3:]
-
-    new_population += top_half_pop_1
-    new_population += top_half_pop_2
-
-    return new_population
+    return soup
 
 
-def change_amt(string_arr):
-    """Helper function for the mutate function, changes the amount of an ingredient uniformly selected at random."""
+def select_new_generation(population_one, population_two):
+    """
+    Takes in the last population and the new population, sorts them by fitness, and then uses the ordering to select
+    the three fittest recipes from each population and combine them into a new generation. At this point, the three
+    least fit soups from each generation can be discarded, and the new generation sent forth as the new starting
+    population for the next generation of soup recipes.
 
-    index_to_change = random.choice(range(len(string_arr)))
-    change_holder = string_arr[index_to_change].ounces  # holds original value
+    @param population_one -- The oldest population of soup, already sorted by fitness
+    @param population_two -- The younger population of soup, sorted by fitness
+    @return A new population of soup comprised of the three fittest recipes from each of the two populations
+    """
+    population_one.sort(key=methodcaller("fitness"))
+    population_two.sort(key=methodcaller("fitness"))
 
-    addition = round(random.uniform(0, change_holder), 2)  # the value we will add to our our current ingredient amount
-    # chosen randomly from 0 to the original ingredient value
+    return population_one[3:] + population_two[3:]
 
-    string_arr[index_to_change].set_amount(change_holder + addition)
-
-
-def change_ingredient(string_arr):
-    """Helper function for the mutate function, changes an ingredient uniformly selected at random."""
-
-    index_to_change = random.choice(range(len(string_arr)))
-    new_ingredient = random.choice(range(len(master_ingredients)))
-
-    string_arr[index_to_change].name = master_ingredients[new_ingredient]
-
-
-def add_ingredient(string_arr):
-    """Helper function for the mutate function, adds an ingredient uniformly selected at random."""
-
-    name_storage = []
-    for ingredient in string_arr:
-        name_storage.append(ingredient.name)
-
-    if len(name_storage) == len(master_ingredients):  # ensures that we don't break the program if all the ingredients
-        # are in a recipe
-        return
-
-    new_ingredient = random.choice(range(len(master_ingredients)))
-
-    while True:  # loop to ensure that we're not adding an ingredient we already have
-        if not master_ingredients[new_ingredient] in name_storage:
-            break
-        else:
-            new_ingredient = random.choice(range(len(master_ingredients)))
-
-    new_amt = round(random.uniform(0, 16), 2)
-
-    string_arr.append(Ingredient(new_amt, master_ingredients[new_ingredient]))
-
-
-def delete_ingredient(string_arr):
-    """Helper function for the mutate function, deletes an ingredient uniformly selected at random."""
-
-    index_to_delete = random.choice(range(len(string_arr)))
-    string_arr.pop(index_to_delete)  # pop method discovered on w3schools.com
-
-def mutate(string_arr):
-    """Takes a recipe in list form and mutates it in some way."""
-
-    mutate_op = random.randrange(0, 4)  # used to determine which mutation will occur
-
-    if mutate_op == 0:
-        change_amt(string_arr)
-    elif mutate_op == 1:
-        change_ingredient(string_arr)
-    elif mutate_op == 2:
-        add_ingredient(string_arr)
-    else:
-        delete_ingredient(string_arr)
-
-    final_arr = normalize(string_arr)  # ensures our ingredients add to 100oz
-
-    return final_arr
-
-
-def normalize(string_arr):
-    """Takes a list of ingredients and normalizes them to equal 100oz."""
-
-    original_vals = []  # stores the original values of the arrays
-
-    for ingredient in string_arr:
-        original_vals.append(round(ingredient.ounces, 2))  # simplifies values
-
-    original_sums = sum(original_vals)
-    to_mult = 100 / original_sums  # gives us the amount to multiply our entries by to scale to 100 oz
-
-    new_vals = []
-
-    for entry in original_vals:
-        new_vals.append(round(entry * to_mult, 2))
-
-    for i in range(len(string_arr)):
-        string_arr[i].set_amount(new_vals[i])
-
-    return string_arr
 
 def main():
     recipes = []
@@ -283,36 +81,24 @@ def main():
     for filename in glob.glob("resources/input/*.txt"):
         recipes.append(Recipe(ingredients_from_file(filename)))
 
-    for recipe in recipes:  # allowing us to make a master list of ingredients to mutate from
-        for ingredient in recipe.ingredients:
+    # get number of generations from command line; default to 10
+    if len(sys.argv) > 1:
+        num_generations = int(sys.argv[1])
+    else:
+        num_generations = 10
 
-            if not ingredient.name[:-1] in master_ingredients:
-                master_ingredients.append(ingredient.name[:-1])
+    # evolve our recipes
+    for i in range(num_generations):
+        new_recipes = fill_generation(recipes)
+        new_population = select_new_generation(recipes, new_recipes)
 
-    new_recipes = fill_generation(recipes)
-    new_population = select_new_generation(recipes, new_recipes)
-
-
-
-        # create n new individuals, where n is the population size
-
-
-            # select two individuals from the population (probability based on fitness)
-
-
-            # perform mutation
-        # normalize the new individuals to 100 ounces
-        # select the fittest half of the new generation and the previous generation, deleting the rest
-
+    # create our output file
     os.makedirs("output", exist_ok=True)
 
     # output the generated recipes to text files
     for i in range(len(recipes)):
         with open("output/new_recipe_" + str(i) + ".txt", "w") as file:
             file.write(str(new_population[i]))
-
-
-
 
 
 if __name__ == "__main__":
