@@ -1,6 +1,6 @@
-# Simplified Pierre Soup 
+# Soupoholics PQ1 - Simplified Pierre Soup 
 
-### A CSCI 3725 Project by Stephen Crawford, Gerard Goucher, and Sam Roussel (Aka Soupoholics)
+### A CSCI 3725 Project by Stephen Crawford, Gerard Goucher, and Sam Roussel
 
 #### Setting up our project
 
