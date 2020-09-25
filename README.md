@@ -17,7 +17,7 @@ and running the following command:
  Our project utilizes a variety of different Python features and modules to 
  implement the simplified PIERRE soup model. We three classes, our Ingredient class, our Recipe class and our main
  class. 
- q  
+ 
  The Ingredient class is used to store ingredient information, name and ounces. The Recipe class stores ingredients in 
  the recipe, an external representation function, a fitness determination function, and a globally accessible file
  reader method.
