@@ -108,11 +108,11 @@ class Recipe:
 
     def deduplicate(self):
         """Remove duplicates which can occur during crossover"""
-        unique_items = []
+        unique_items = dict()
 
         for item in self.ingredients:
             if item.name not in unique_items:
-                unique_items.append(item)
+                unique_items[item.name] = item
 
-        self.ingredients = unique_items
+        self.ingredients = list(unique_items.values())
 

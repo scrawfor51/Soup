@@ -91,6 +91,7 @@ def main():
     for i in range(num_generations):
         new_recipes = fill_generation(recipes)
         new_population = select_new_generation(recipes, new_recipes)
+        recipes = new_recipes
 
     # create our output file
     os.makedirs("output", exist_ok=True)
